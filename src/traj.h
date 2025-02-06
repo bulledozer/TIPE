@@ -17,6 +17,7 @@ class Traj
         void append(Traj*);
 
         void changePoint(int, Vector3);
+        void removePoint(int);
 
         void Draw(std::vector<Color>);
         void Draw(Color);

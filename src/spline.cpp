@@ -19,8 +19,8 @@ int Spline::NumSegment()
 
 void Spline::AddPoint(Vector3 point)
 {
-    this->points.push_back(Vector3Add(this->points[this->points.size()-1], Vector3{10.0f,.0f,.0f}));
-    this->points.push_back(Vector3Add(point, Vector3{10.0f,.0f,.0f}));
+    this->points.push_back(Vector3Lerp(this->points[this->points.size()-1], point, 0.333f));
+    this->points.push_back(Vector3Lerp(this->points[this->points.size()-1], point, 0.666f));
     this->points.push_back(point);
 }
 

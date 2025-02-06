@@ -11,15 +11,17 @@
 
 
 void handleSpline(Spline*, Camera, int*);
-void updateCam(Camera*, double, double);
+void updateCam(Camera*, double, double, Vector3);
 
 int main(int, char**){
     const int screenWidth = 1280;
     const int screenHeight = 768;
 
-    double theta = PI/2;
+    double theta = PI/4;
     double R = 30.0f;
+    Vector3 camPos = Vector3{.0f,.0f,.0f};
 
+    float moveSpeed = 100.0;
     double camSpeed = 1.8f;
     double zoomSpeed = 50.0f;
 
@@ -45,7 +47,9 @@ int main(int, char**){
     {
         theta += (IsKeyDown(KEY_LEFT) - IsKeyDown(KEY_RIGHT))*GetFrameTime()*camSpeed;
         R += (IsKeyDown(KEY_DOWN) - IsKeyDown(KEY_UP))*GetFrameTime()*zoomSpeed;
-        updateCam(&camera, theta, R);
+        camPos.x += (IsKeyDown(KEY_A) - IsKeyDown(KEY_D))*GetFrameTime()*moveSpeed;
+        camPos.z += (IsKeyDown(KEY_W) - IsKeyDown(KEY_S))*GetFrameTime()*moveSpeed;
+        updateCam(&camera, theta, R, camPos);
 
         BeginDrawing();
         BeginMode3D(camera);
@@ -118,8 +122,9 @@ void handleSpline(Spline * spline, Camera cam, int * selectedPoint)
 
 }
 
-void updateCam(Camera* cam, double theta, double R)
+void updateCam(Camera* cam, double theta, double R, Vector3 pos)
 {
     cam->position = Vector3Scale(Vector3Normalize(Vector3{(float)(cos(theta)),1.0f,(float)(sin(theta))}), (float)R);
+    //cam->position = Vector3Add(cam->position, pos);
     cam->target = Vector3{0.0f,0.0f,0.0f};
 }

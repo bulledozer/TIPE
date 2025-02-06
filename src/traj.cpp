@@ -49,6 +49,11 @@ void Traj::changePoint(int pos, Vector3 point)
     this->points[pos] = point;
 }
 
+void Traj::removePoint(int pos)
+{
+    this->points.erase(this->points.begin()+pos);
+}
+
 void Traj::append(Traj* tr)
 {
     for (int i = 0 ; i < tr->NumPoints() ; i++)
