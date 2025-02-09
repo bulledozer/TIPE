@@ -17,9 +17,9 @@ class Solver
         std::vector<float> OptimalSpeed(Traj*);
         Traj Solve(Road*,int,int,float);
     private:
-        std::vector<float> timeOfFlight(Traj*);
+        float timeOfFlight(Traj*);
         float length(Traj*);
-        Traj SolvePart(Road*, int, float,int,int);
+        std::pair<Traj,std::vector<float>> SolvePart(Road*, int, float,int,int, float, float);
 
 };
 

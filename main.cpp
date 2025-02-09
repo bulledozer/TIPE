@@ -58,7 +58,7 @@ int main(int, char**){
             handleSpline(&spline, camera, &selectedPoint);
             //traj.CreateSpline(&spline, 500);
             road.CreateSpline(&spline, 100);
-            Traj fastestPath = solver.Solve(&road, 10, 10,.20f);
+            Traj fastestPath = solver.Solve(&road, 20, 10,.20f);
             //Traj fastestPath = solver.SolvePart(&road, 10,.20f, 10,20);
             fastestPath.Draw(RED);
 
@@ -125,6 +125,6 @@ void handleSpline(Spline * spline, Camera cam, int * selectedPoint)
 void updateCam(Camera* cam, double theta, double R, Vector3 pos)
 {
     cam->position = Vector3Scale(Vector3Normalize(Vector3{(float)(cos(theta)),1.0f,(float)(sin(theta))}), (float)R);
-    //cam->position = Vector3Add(cam->position, pos);
     cam->target = Vector3{0.0f,0.0f,0.0f};
+    //cam->position = Vector3Add(cam->position, pos);
 }
