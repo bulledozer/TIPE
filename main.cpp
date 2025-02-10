@@ -2,6 +2,9 @@
 #include "raymath.h"
 #include "rlgl.h"
 
+#define RAYGUI_IMPLEMENTATION
+#include "include/raygui.h"
+
 #include <iostream>
 
 #include "src/traj.h"
@@ -30,6 +33,14 @@ int main(int, char**){
     camera.fovy = 60.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
+    const int sliderW = 150;
+    const int sliderH = 25;
+
+    float roadSeg = 100.0f;
+    float subDiv = 10.0f;
+    float Niter = 20.0f;
+    float str = 0.2f;
+
     InitWindow(screenWidth, screenHeight, "TIPE");
 
     Traj traj = Traj(1.3f);
@@ -52,13 +63,19 @@ int main(int, char**){
         updateCam(&camera, theta, R, camPos);
 
         BeginDrawing();
+        ClearBackground(RAYWHITE);
+
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 50.0f, sliderW-50.0f,sliderH}, "Segments", TextFormat("%f", roadSeg), &roadSeg, 10.0f, 200.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 60.0f+sliderH, sliderW-50.0f,sliderH}, "Subdiv", TextFormat("%f", subDiv), &subDiv, 1.0f, 50.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 70.0f+2*sliderH, sliderW-50.0f,sliderH}, "N", TextFormat("%f", Niter), &Niter, 1.0f, 100.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 80.0f+3*sliderH, sliderW-50.0f,sliderH}, "Influence", TextFormat("%f", str), &str, .0f, 0.5f);
+        
         BeginMode3D(camera);
-            ClearBackground(RAYWHITE);
 
             handleSpline(&spline, camera, &selectedPoint);
             //traj.CreateSpline(&spline, 500);
-            road.CreateSpline(&spline, 100);
-            Traj fastestPath = solver.Solve(&road, 20, 10,.20f);
+            road.CreateSpline(&spline, (int)roadSeg);
+            Traj fastestPath = solver.Solve(&road, (int)Niter, (int)subDiv, str);
             //Traj fastestPath = solver.SolvePart(&road, 10,.20f, 10,20);
             fastestPath.Draw(RED);
 
@@ -69,7 +86,7 @@ int main(int, char**){
                     Vector3 c = Vector3Lerp({ 135, 60, 190}, { 253, 249, 0}, 1.0f-1.0f/(1.0f+0.05f*e));
                     col.push_back(Color{(unsigned char)c.x,(unsigned char)c.y,(unsigned char)c.z,255});
                 }
-
+            
             DrawGrid(100,1.0f);
             //traj.Draw(col);
             road.Draw(RED);

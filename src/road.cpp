@@ -25,7 +25,7 @@ int Road::getNumRows() {return this->numRows;}
 
 void Road::CreateSpline(Spline* spline, int res)
 {
-    float width = 1.5f;
+    float width = 3.0f;
     this->points.clear();
     numRows = 0;
     for (int i = 0 ; i < res ; i++)

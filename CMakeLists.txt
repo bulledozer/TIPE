@@ -18,7 +18,9 @@ main.cpp
 src/traj.cpp
 src/solver.cpp
 src/spline.cpp
-src/road.cpp)
+src/road.cpp
+include/raygui.h
+)
 
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 
