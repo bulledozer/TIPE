@@ -25,6 +25,7 @@ class Traj
 
         int NumPoints();
         float GetRadius(int pos);
+        float GetRadius2(int);
         Vector3 getPoint(int);
 
     private:

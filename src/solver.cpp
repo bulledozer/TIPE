@@ -8,7 +8,7 @@
 
 bool Solver::IsValidVconst(Traj* traj, float speed)
 {
-    for (int i = 1 ; i < traj->NumPoints() ; i++)
+    for (int i = 1 ; i < traj->NumPoints()-1 ; i++)
     {
         float R = traj->GetRadius(i);
         float s2 = R*traj->mu*G;
@@ -23,9 +23,9 @@ std::vector<float> Solver::OptimalSpeed(Traj* traj)
 {
     std::vector<float> speed;
 
-    for (int i = 1 ; i < traj->NumPoints() ; i++)
-    {
-        float R = traj->GetRadius(i);
+    for (int i = 1 ; i < traj->NumPoints()-1 ; i++)
+    {  
+        float R = traj->GetRadius2(i);
         float s2 = R*traj->mu*G;
 
         speed.push_back((float)sqrt(s2));
@@ -40,7 +40,7 @@ float Solver::timeOfFlight(Traj* traj)
     float time = 0.0f;
     for (int i = 1 ; i < traj->NumPoints()-1 ; i++)
     {
-        time += (Vector3Length(Vector3Subtract(traj->getPoint(i), traj->getPoint(i+1)))/speed[i]);
+        time += (Vector3Length(Vector3Subtract(traj->getPoint(i), traj->getPoint(i+1)))/speed[i-1]);
     }
     return time;
 }
@@ -81,7 +81,7 @@ std::pair<Traj,std::vector<float>> Solver::SolvePart(Road* road, int N, float st
     {
         std::vector<float> gradient;
 
-        float totallength = this->length(&traj);
+        float totallength = this->timeOfFlight(&traj);
 
         for (int j = im ; j < iM ; j++) 
         {
@@ -89,7 +89,7 @@ std::pair<Traj,std::vector<float>> Solver::SolvePart(Road* road, int N, float st
             Vector3 tmp = traj.getPoint(j-im);
             traj.changePoint(j-im, p1);
 
-            float l = this->length(&traj);
+            float l = this->timeOfFlight(&traj);
             
             gradient.push_back((l-totallength)/Vector3Length(Vector3Subtract(p1,tmp)));
         }

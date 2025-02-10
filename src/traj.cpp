@@ -99,6 +99,15 @@ float Traj::GetRadius(int pos)
     return Vector2Length(Vector2Subtract(Vector2{p1.x,p1.z}, inter));
 }
 
+float Traj::GetRadius2(int pos)
+{
+    float dydx = (this->points[pos+1].z-this->points[pos].z)/(this->points[pos+1].x-this->points[pos].x);
+    float dydxp = (this->points[pos].z-this->points[pos-1].z)/(this->points[pos].x-this->points[pos-1].x);
+    float d2ydx2 = (dydx-dydxp)/(this->points[pos].x-this->points[pos-1].x);
+
+    return abs(pow(1+dydx*dydx,1.5)/d2ydx2);
+}
+
 Vector3 Traj::getPoint(int pos)
 {
     return this->points[pos];
