@@ -34,7 +34,7 @@ void Traj::CreateSpline(Spline * spline, int res)
     for (int i = 0 ; i < res ; i++)
     {
         float m = (float)i/(float)res;
-        t.push_back(spline->SampleAt(m));
+        t.push_back(spline->SampleAtCR(m));
     }
     this->points = t;
 }
@@ -105,6 +105,7 @@ float Traj::GetRadius2(int pos)
     float dydxp = (this->points[pos].z-this->points[pos-1].z)/(this->points[pos].x-this->points[pos-1].x);
     float d2ydx2 = (dydx-dydxp)/(this->points[pos].x-this->points[pos-1].x);
 
+    //return 1.0f;
     return abs(pow(1+dydx*dydx,1.5)/d2ydx2);
 }
 

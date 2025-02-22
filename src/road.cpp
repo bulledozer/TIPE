@@ -64,6 +64,8 @@ Vector3 Road::getInterpolated(int pos, float m)
     return Vector3Lerp(this->points[pos], this->points[pos+this->rowSize-1],m);
 }
 
+Vector3 Road::getPoint(int pos) {return this->points[pos];}
+
 void Road::Draw(Color col)
 {
     for (int i = 0 ; i < this->numRows-2 ; i++)

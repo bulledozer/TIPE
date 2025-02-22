@@ -24,6 +24,7 @@ class Road
         Vector3 getNormalSide(int);
         Vector3 getInterpolated(int, float);
         std::vector<Vector3> points;
+        Vector3 getPoint(int);
     private:
         void addRow(Vector3[]);
         int numRows = 0;

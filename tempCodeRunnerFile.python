@@ -1,0 +1,17 @@
+def recherche(L,e):
+    c1,c2 = 0,len(L)-1
+    while c2-c1 > 1:
+        c  = int((c1+c2)/2)
+        if L[c] > e:
+            c2 = c
+        else:
+            c1 = c
+    return L[c1] == e or L[c2] == e
+
+def recherche2(L,e):
+    if len(L) == 1:
+        return L[0] == e
+    
+    return recherche2(L[0:int(len(L)/2)],e) or recherche2(L[int(len(L)/2): len(L)],e)
+
+print(recherche2([1,2,3,4,17,54,120],17))

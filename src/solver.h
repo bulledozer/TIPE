@@ -16,10 +16,11 @@ class Solver
         bool IsValidVconst(Traj*,float);
         std::vector<float> OptimalSpeed(Traj*);
         Traj Solve(Road*,int,int,float);
+        std::pair<Traj,std::vector<float>> SolvePart(Road*, int, float,int,int, float, float);
     private:
         float timeOfFlight(Traj*);
+        float ComputeTime(Spline*);
         float length(Traj*);
-        std::pair<Traj,std::vector<float>> SolvePart(Road*, int, float,int,int, float, float);
 
 };
 

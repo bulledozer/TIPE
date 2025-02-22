@@ -2,6 +2,7 @@
 #include <vector>
 #include <map>
 #include "solver.h"
+#include "spline.h"
 
 #include "raymath.h"
 
@@ -40,7 +41,8 @@ float Solver::timeOfFlight(Traj* traj)
     float time = 0.0f;
     for (int i = 1 ; i < traj->NumPoints()-1 ; i++)
     {
-        time += (Vector3Length(Vector3Subtract(traj->getPoint(i), traj->getPoint(i+1)))/speed[i-1]);
+        //time += (Vector3Length(Vector3Subtract(traj->getPoint(i), traj->getPoint(i+1)))/speed[i-1]);
+        time += 1/speed[i-1];
     }
     return time;
 }
@@ -55,9 +57,23 @@ float Solver::length(Traj* traj)
     return l;
 }
 
+float Solver::ComputeTime(Spline* spline)
+{
+    float t = 0.0f;
+    for (int i = 0 ; i < spline->NumPoints()-1 ; i++)
+    {
+        float d = Vector3Length(Vector3Subtract(spline->SampleAtCR((float)i/(float)spline->NumPoints()), 
+                                                spline->SampleAtCR((float)(i+1)/(float)spline->NumPoints())));
+        //std::cout << spline->SampleAtCR((float)i/(float)spline->NumPoints()).x << std::endl;
+        t += (float)sqrt(spline->getRadiusAtCR((float)i/(float)spline->NumPoints())*G);
+    }
+    return t;
+}
+
 std::pair<Traj,std::vector<float>> Solver::SolvePart(Road* road, int N, float strength,int im, int iM, float wm, float wM)
 {
     std::vector<float> points;
+    Spline spline(road->getInterpolated(0,0.5f));
     Traj traj(road->mu);
 
     float h = 0.001f;
@@ -75,6 +91,7 @@ std::pair<Traj,std::vector<float>> Solver::SolvePart(Road* road, int N, float st
         //std::cout << t << std::endl;
         points.push_back(t);
         traj.addPoint(road->getInterpolated((i+im)*road->getRowSize(), t));
+        spline.AddPoint(road->getInterpolated((i+im)*road->getRowSize(), t));
     }
     
     for (int i = 0 ; i < N ; i++)
@@ -91,6 +108,8 @@ std::pair<Traj,std::vector<float>> Solver::SolvePart(Road* road, int N, float st
 
             float l = this->timeOfFlight(&traj);
             
+            //traj.changePoint(j-im,tmp);
+
             gradient.push_back((l-totallength)/Vector3Length(Vector3Subtract(p1,tmp)));
         }
         for (int j = im ; j < iM ; j++)
@@ -109,7 +128,7 @@ std::pair<Traj,std::vector<float>> Solver::SolvePart(Road* road, int N, float st
     return std::pair<Traj,std::vector<float>>(traj,points);
 }
 
-Traj Solver::Solve(Road* road, int N, int iter, float strength)
+/*Traj Solver::Solve(Road* road, int N, int iter, float strength)
 {
     Traj sol = Traj(road->mu);
     std::vector<float> last;
@@ -121,8 +140,65 @@ Traj Solver::Solve(Road* road, int N, int iter, float strength)
         last = seg.second;
     }
     return sol;
-}
+}*/
 
+Traj Solver::Solve(Road* road, int N, int iter, float strength)
+{
+    Traj sol = Traj(road->mu);
+
+    Spline spline(road->getInterpolated(0,0.5f));
+    std::vector<float> points;
+
+    for (int i = 0 ; i < iter ; i++)
+    {
+        /*if (i == iter)
+        {
+            DrawSphere(road->getInterpolated(road->getRowSize()*(road->getNumRows()-1),.5f), 1.0f, GREEN);
+            spline.AddSinglePoint(road->getInterpolated(road->getRowSize()*(road->getNumRows()-1),.5f));
+            points.push_back(-1.f);
+            continue;
+        }*/
+        float t = ((float)i/(float)iter);
+        spline.AddSinglePoint(road->getInterpolated(((int)Lerp(.0f,(float)road->getNumRows(), t))*road->getRowSize(), 0.5f));
+        points.push_back(0.5f);
+    } 
+    
+    for (int i = 0 ; i < N ; i++)
+    {
+        std::vector<float> gradient;
+        float h = 0.01f;
+        
+        float totaltime = this->ComputeTime(&spline);
+        
+        for (int j = 1 ; j < iter ; j++)
+        {
+            Vector3 p1 = road->getInterpolated((int)(((float)j/(float)iter)*road->getNumRows()*road->getRowSize()), points[j]+h);
+            //std::cout << (int)(((float)j/(float)iter)*road->getNumRows()*road->getRowSize()) << std::endl;
+            Vector3 tmp = spline.SampleAtCR((float)j/(float)spline.NumPoints());
+            spline.ChangePoint(j, p1);
+            float t = this->ComputeTime(&spline);
+            //std::cout << t << std::endl;
+            spline.ChangePoint(j, tmp);
+            
+            gradient.push_back((t-totaltime));
+        }
+        for (int j = 1 ; j < iter ; j++)
+        {
+            points[j] += gradient[j-1]*strength;
+            //std::cout << gradient[9] << std::endl;
+            
+            points[j] = Clamp(points[j],.0f,1.0f);
+            //std::cout << (int)(((float)i/(float)iter)*road->getNumRows()*road->getRowSize()) << std::endl;
+            spline.ChangePoint(j, road->getInterpolated((int)(((float)j/(float)iter)*road->getNumRows()*road->getRowSize()), points[j]));
+        }
+    }
+    for (int i = 0 ; i < road->getNumRows() ; i++)
+    {
+        //std::cout << spline.SampleAtCR((float)i/(float)road->getNumRows()).x << std::endl;
+        sol.addPoint(spline.SampleAtCR((float)i/(float)road->getNumRows()));
+    }
+    return sol;
+}
 
 
 

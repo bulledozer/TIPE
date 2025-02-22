@@ -38,7 +38,7 @@ int main(int, char**){
 
     float roadSeg = 100.0f;
     float subDiv = 10.0f;
-    float Niter = 20.0f;
+    float Niter = 100.0f;
     float str = 0.2f;
 
     InitWindow(screenWidth, screenHeight, "TIPE");
@@ -66,27 +66,31 @@ int main(int, char**){
         ClearBackground(RAYWHITE);
 
         GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 50.0f, sliderW-50.0f,sliderH}, "Segments", TextFormat("%f", roadSeg), &roadSeg, 10.0f, 200.0f);
-        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 60.0f+sliderH, sliderW-50.0f,sliderH}, "Subdiv", TextFormat("%f", subDiv), &subDiv, 1.0f, 50.0f);
-        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 70.0f+2*sliderH, sliderW-50.0f,sliderH}, "N", TextFormat("%f", Niter), &Niter, 1.0f, 100.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 60.0f+sliderH, sliderW-50.0f,sliderH}, "Subdiv", TextFormat("%f", subDiv), &subDiv, 2.0f, 50.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 70.0f+2*sliderH, sliderW-50.0f,sliderH}, "N", TextFormat("%f", Niter), &Niter, 1.0f, 200.0f);
         GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 80.0f+3*sliderH, sliderW-50.0f,sliderH}, "Influence", TextFormat("%f", str), &str, .0f, 0.5f);
         
         BeginMode3D(camera);
 
             handleSpline(&spline, camera, &selectedPoint);
-            //traj.CreateSpline(&spline, 500);
+
+            Traj traj2(1.f);
+            /*traj2.CreateSpline(&spline,100);
+            traj2.Draw(GREEN);
+            //traj.CreateSpline(&spline, 500);*/
             road.CreateSpline(&spline, (int)roadSeg);
             Traj fastestPath = solver.Solve(&road, (int)Niter, (int)subDiv, str);
             //Traj fastestPath = solver.SolvePart(&road, 10,.20f, 10,20);
-            fastestPath.Draw(RED);
-
-            std::vector<float> speed = solver.OptimalSpeed(&traj);
+            
+            std::vector<float> speed = solver.OptimalSpeed(&fastestPath);
             std::vector<Color> col;
             for (auto &e : speed)
-                {
-                    Vector3 c = Vector3Lerp({ 135, 60, 190}, { 253, 249, 0}, 1.0f-1.0f/(1.0f+0.05f*e));
-                    col.push_back(Color{(unsigned char)c.x,(unsigned char)c.y,(unsigned char)c.z,255});
-                }
+            {
+                Vector3 c = Vector3Lerp({ 135, 60, 190}, { 253, 249, 0}, 1.0f-1.0f/(1.0f+0.05f*e));
+                col.push_back(Color{(unsigned char)c.x,(unsigned char)c.y,(unsigned char)c.z,255});
+            }
             
+            fastestPath.Draw(col);
             DrawGrid(100,1.0f);
             //traj.Draw(col);
             road.Draw(RED);
