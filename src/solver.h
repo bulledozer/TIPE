@@ -17,10 +17,13 @@ class Solver
         std::vector<float> OptimalSpeed(Traj*);
         Traj Solve(Road*,int,int,float);
         std::pair<Traj,std::vector<float>> SolvePart(Road*, int, float,int,int, float, float);
+        float ComputeTime(Spline*);
+        Traj Solve2(Road*, int, int, int, float ,float);
     private:
         float timeOfFlight(Traj*);
-        float ComputeTime(Spline*);
         float length(Traj*);
+        float ComputeTime(Road*, std::vector<float>&);
+        std::vector<Vector3> pointsFromState(Road* road, std::vector<float>&);
 
 };
 

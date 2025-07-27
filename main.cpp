@@ -28,6 +28,7 @@ int main(int, char**){
     double camSpeed = 1.8f;
     double zoomSpeed = 50.0f;
 
+
     Camera3D camera = {0};
     camera.up = Vector3{ 0.0f, 1.0f, 0.0f };
     camera.fovy = 60.0f;
@@ -37,9 +38,10 @@ int main(int, char**){
     const int sliderH = 25;
 
     float roadSeg = 100.0f;
-    float subDiv = 10.0f;
+    float subDiv = 20.0f;
     float Niter = 100.0f;
-    float str = 0.2f;
+    float str = 1000.f;
+    bool compute = 0;
 
     InitWindow(screenWidth, screenHeight, "TIPE");
 
@@ -51,7 +53,11 @@ int main(int, char**){
     Solver solver;
 
     int selectedPoint = -1;
-    Spline spline = Spline();
+    Spline spline = Spline(1);
+
+    road.CreateSpline(&spline, (int)roadSeg);
+    //Traj sol = solver.Solve(&road, (int)Niter, (int)subDiv, str);
+    Traj sol = solver.Solve(&road, (int)Niter, (int)subDiv, str);
 
 
     while (!WindowShouldClose())
@@ -66,23 +72,36 @@ int main(int, char**){
         ClearBackground(RAYWHITE);
 
         GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 50.0f, sliderW-50.0f,sliderH}, "Segments", TextFormat("%f", roadSeg), &roadSeg, 10.0f, 200.0f);
-        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 60.0f+sliderH, sliderW-50.0f,sliderH}, "Subdiv", TextFormat("%f", subDiv), &subDiv, 2.0f, 50.0f);
-        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 70.0f+2*sliderH, sliderW-50.0f,sliderH}, "N", TextFormat("%f", Niter), &Niter, 1.0f, 200.0f);
-        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 80.0f+3*sliderH, sliderW-50.0f,sliderH}, "Influence", TextFormat("%f", str), &str, .0f, 0.5f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 60.0f+sliderH, sliderW-50.0f,sliderH}, "Res", TextFormat("%f", subDiv), &subDiv, 0.1f, 100.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 70.0f+2*sliderH, sliderW-50.0f,sliderH}, "N", TextFormat("%f", Niter), &Niter, 1.0f, 1000.0f);
+        GuiSliderBar(Rectangle{screenWidth-sliderW-30.0f, 80.0f+3*sliderH, sliderW-50.0f,sliderH}, "Strength", TextFormat("%f", str), &str, .0f, 2000.f);
+        GuiCheckBox(Rectangle{screenWidth-sliderW-50.0f, 80.0f+4*sliderH, sliderH,sliderH}, "Calculer", &compute);
         
         BeginMode3D(camera);
 
             handleSpline(&spline, camera, &selectedPoint);
 
-            Traj traj2(1.f);
-            /*traj2.CreateSpline(&spline,100);
-            traj2.Draw(GREEN);
-            //traj.CreateSpline(&spline, 500);*/
+            /*Traj traj2(1.f);
+            traj2.CreateSpline(&spline,100);
+
+            std::vector<Color> radiusVis;
+            for (int i = 0 ; i < 99 ; i++)
+            {
+                Vector3 c2 = Vector3Lerp({ 135, 60, 190}, { 253, 249, 0}, 1.0f-1.0f/(1.0f+0.05f*spline.getRadiusAtCR((float)i/99.f)));
+                Color col2 = (Color{(unsigned char)c2.x,(unsigned char)c2.y,(unsigned char)c2.z,255});
+                radiusVis.push_back(col2);
+            }
+            traj2.Draw(radiusVis);*/
+
             road.CreateSpline(&spline, (int)roadSeg);
-            Traj fastestPath = solver.Solve(&road, (int)Niter, (int)subDiv, str);
+
+            if (IsKeyPressed(KEY_SPACE) || compute)
+                    //sol = solver.Solve2(&road, (int)Niter, 10, 40, subDiv,str);
+                    sol = solver.Solve(&road, (int)Niter, (int)subDiv, str);
+
             //Traj fastestPath = solver.SolvePart(&road, 10,.20f, 10,20);
             
-            std::vector<float> speed = solver.OptimalSpeed(&fastestPath);
+            std::vector<float> speed = solver.OptimalSpeed(&sol);
             std::vector<Color> col;
             for (auto &e : speed)
             {
@@ -90,7 +109,7 @@ int main(int, char**){
                 col.push_back(Color{(unsigned char)c.x,(unsigned char)c.y,(unsigned char)c.z,255});
             }
             
-            fastestPath.Draw(col);
+            sol.Draw(col);
             DrawGrid(100,1.0f);
             //traj.Draw(col);
             road.Draw(RED);

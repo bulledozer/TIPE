@@ -2,12 +2,13 @@
 
 #include <iostream>
 
-Spline::Spline()
+Spline::Spline(bool df)
 {
-    points.push_back(Vector3{10.0f,.0f,-10.0f});
+    if (df)
+    {points.push_back(Vector3{10.0f,.0f,-10.0f});
     points.push_back(Vector3{10.0f,.0f,10.0f});
     points.push_back(Vector3{-10.0f,.0f,10.0f});
-    points.push_back(Vector3{-10.0f,.0f,-10.0f});
+    points.push_back(Vector3{-10.0f,.0f,-10.0f});}
 }
 
 Spline::Spline(Vector3 p)
@@ -87,12 +88,14 @@ float Spline::getRadiusAtCR(float t)
     Vector3 C = this->points[(segment+2)%this->NumPoints()];
     Vector3 D = this->points[(segment+3)%this->NumPoints()];
 
-    float dxdt = 0.5f * (C.x-A.x + 2.0f*t*(2.0f*A.x-5.0f*B.x+4.0f*C.x-D.x)+3.f*t*t*(-A.x+3.f*B.x-3.f*C.x+D.x));
-    float dzdt = 0.5f * (C.z-A.z + 2.0f*t*(2.0f*A.z-5.0f*B.z+4.0f*C.z-D.z)+3.f*t*t*(-A.z+3.f*B.z-3.f*C.z+D.z));
-    float dx2dt = 0.5f * (2.0f*(2.0f*A.x-5.0f*B.x+4.0f*C.x-D.x)+6.f*t*(-A.x+3.f*B.x-3.f*C.x+D.x));
-    float dz2dt = 0.5f * (2.0f*(2.0f*A.z-5.0f*B.z+4.0f*C.z-D.z)+6.f*t*(-A.z+3.f*B.z-3.f*C.z+D.z));
+    float nt = Wrap(t,0.0f, 1.0f/(float)(this->NumPoints()-3))*(float)(this->NumPoints()-3);
 
-    return abs(pow(dxdt*dxdt+dzdt*dzdt, 1.5f)/(dxdt*dz2dt-dzdt*dx2dt));
+    float dxdt = 0.5f * (C.x-A.x + 2.0f*nt*(2.0f*A.x-5.0f*B.x+4.0f*C.x-D.x)+3.f*nt*nt*(-A.x+3.f*B.x-3.f*C.x+D.x));
+    float dzdt = 0.5f * (C.z-A.z + 2.0f*nt*(2.0f*A.z-5.0f*B.z+4.0f*C.z-D.z)+3.f*nt*nt*(-A.z+3.f*B.z-3.f*C.z+D.z));
+    float dx2dt = 0.5f * (2.0f*(2.0f*A.x-5.0f*B.x+4.0f*C.x-D.x)+6.f*nt*(-A.x+3.f*B.x-3.f*C.x+D.x));
+    float dz2dt = 0.5f * (2.0f*(2.0f*A.z-5.0f*B.z+4.0f*C.z-D.z)+6.f*nt*(-A.z+3.f*B.z-3.f*C.z+D.z));
+
+    return abs(pow(dxdt*dxdt+dzdt*dzdt, 1.5f)/abs((dxdt*dz2dt-dzdt*dx2dt)));
 }
 
 void Spline::DrawControl(int focus)

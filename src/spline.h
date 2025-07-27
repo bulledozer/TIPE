@@ -10,7 +10,7 @@ class Spline
 {
 
     public:
-        Spline();
+        Spline(bool);
         Spline(Vector3);
 
         int NumPoints();
